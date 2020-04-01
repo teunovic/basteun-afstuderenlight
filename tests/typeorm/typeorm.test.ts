@@ -16,6 +16,8 @@ import {StudentClass} from "./entities/StudentClass";
 import {StudyProgramme} from "./entities/StudyProgramme";
 import {Academy} from "./entities/Academy";
 import {University} from "./entities/University";
+import * as os from "os";
+import CPUTimer from "../CPUTimer";
 
 
 
@@ -89,20 +91,26 @@ describe('TypeORM tests', () => {
             }
             universities.push(uni);
         }
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date;
         await University.save(universities);
         timings.create = (+new Date) - ms;
         console.log('Creation took ' + timings.create + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     let universities: University[] = [];
     it('should check TypeORM read speed', async function() {
         this.timeout(30000);
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         universities = await University.find({ loadEagerRelations: true });
         timings.readWithRelations = (+new Date()) - ms;
         console.log('Reading took ' + timings.readWithRelations + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     it('should check TypeORM update nested speed', async function() {
@@ -124,10 +132,13 @@ describe('TypeORM tests', () => {
             }
         }
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         universities = await University.save(universities, { reload: false, transaction: true });
         timings.updateNested = (+new Date()) - ms;
         console.log('Updating took ' + timings.updateNested + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     it('should check TypeORM update 7200 items non-nested speed', async function() {
@@ -147,19 +158,25 @@ describe('TypeORM tests', () => {
             }
         }
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         await Student.save(students, { reload: false, transaction: true });
         timings.updateNonNested = (+new Date()) - ms;
         console.log('Updating 7200 non-nested rows took ' + timings.updateNonNested + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     it('should check TypeORM delete speed', async function() {
         this.timeout(30000);
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         await University.delete({});
         timings.delete = (+new Date()) - ms;
         console.log('Deleting took ' + timings.delete + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
 

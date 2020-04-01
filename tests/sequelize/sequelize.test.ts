@@ -4,6 +4,8 @@ import Academy from "./entities/Academy";
 import Student from "./entities/Student";
 import StudentClass from "./entities/StudentClass";
 import StudyProgramme from "./entities/StudyProgramme";
+import * as os from "os-utils";
+import CPUTimer from "../CPUTimer";
 
 const INCLUDES = [{ model: Academy, as: 'academies', include: [{ model: StudyProgramme, as: 'studyProgrammes', include: [{ model: StudentClass, as: 'studentClasses', include: [{ model: Student, as: 'students'}]}]}]}];
 
@@ -75,20 +77,26 @@ describe('Sequelize tests', () => {
             universities.push(uni);
         }
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         await University.bulkCreate(universities, { include: INCLUDES});
         timings.create = (+new Date()) - ms;
         console.log('Creating took ' + timings.create + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     let universities: University[] = [];
     it('should check sequelize read speed', async function() {
         this.timeout(30000);
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         universities = (await University.findAll({ include: INCLUDES })).map(u => (u as any).dataValues);
         timings.readWithRelations = (+new Date()) - ms;
         console.log('Reading took ' + timings.readWithRelations + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     it('should check sequelize update nested items speed', async function() {
@@ -112,14 +120,19 @@ describe('Sequelize tests', () => {
                 }
             }
         }
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         await Student.bulkCreate(students, { updateOnDuplicate: ['name'], fields: ['id', 'name'] });
         timings.u = (+new Date()) - ms;
         console.log('Updating 7200 non-nested took ' + timings.u + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
     it('should check sequelize delete speed', async function() {
 
+        let cpuTimer = new CPUTimer();
+        cpuTimer.startTimer();
         let ms = +new Date();
         await Student.destroy({ where: {} });
         await StudentClass.destroy({ where: {} });
@@ -128,6 +141,7 @@ describe('Sequelize tests', () => {
         await University.destroy({ where: {} });
         timings.d = (+new Date()) - ms;
         console.log('Deleting took ' + timings.u + 'ms');
+        console.log('CPU average: ' + cpuTimer.getResult() + '%');
     });
 
 
